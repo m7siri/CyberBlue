@@ -70,6 +70,7 @@ git clone https://github.com/m7siri/cyber-blue-project.git
 cd cyber-blue-project
 
 # Run the quick start script
+chmod +x cyberblue_init.sh
 chmod +x quick-start.sh
 ./quick-start.sh
 ```

@@ -1,0 +1,10 @@
+velociraptor/velociraptor
+*.log
+__pycache__/
+*.pyc
+wazuh/config/wazuh_indexer_ssl_certs
+shuffle/shuffle-database/
+
+# Wireshark SSL certificates (required for functionality)
+!wireshark/config/ssl/cert.crt
+!wireshark/config/ssl/cert.key

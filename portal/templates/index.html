@@ -1,0 +1,2192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberBlueBox Portal - Enhanced Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #00d4ff;
+            --secondary-color: #0099cc;
+            --success-color: #00ff88;
+            --warning-color: #ffaa00;
+            --danger-color: #ff4444;
+            --dark-color: #0a1628;
+            --light-color: #1a2332;
+            --cyber-blue: #001122;
+            --neon-blue: #00ccff;
+            --dark-blue: #112233;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a1628 0%, #1a2332 50%, #001122 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #e0e6ed;
+        }
+
+        .dashboard-container {
+            background: rgba(26, 35, 50, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.1);
+            margin: 20px;
+            padding: 30px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .metric-card {
+            background: linear-gradient(145deg, #1a2332, #0f1419);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 212, 255, 0.1);
+            transition: all 0.3s ease;
+            border-left: 5px solid var(--primary-color);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            height: 100%;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 212, 255, 0.2);
+            border-color: var(--neon-blue);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+
+        .metric-label {
+            color: #a0b3c7;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .metric-icon {
+            font-size: 3rem;
+            opacity: 0.8;
+            margin-bottom: 15px;
+            color: var(--neon-blue);
+            text-shadow: 0 0 15px rgba(0, 204, 255, 0.5);
+        }
+
+        .chart-container {
+            background: linear-gradient(145deg, #1a2332, #0f1419);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 212, 255, 0.1);
+            margin-bottom: 20px;
+            height: fit-content;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .chart-container h5 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            font-weight: 600;
+            text-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
+        }
+
+        .chart-container canvas {
+            max-height: 300px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            box-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+        }
+
+        .status-running { 
+            background-color: var(--success-color);
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
+        }
+        .status-stopped { 
+            background-color: var(--danger-color);
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.8);
+        }
+        .status-unknown { 
+            background-color: var(--secondary-color);
+            box-shadow: 0 0 10px rgba(0, 153, 204, 0.8);
+        }
+
+        .tool-card {
+            background: linear-gradient(145deg, #1a2332, #0f1419);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 15px rgba(0, 212, 255, 0.1);
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            color: #e0e6ed;
+        }
+
+        .tool-card.healthy { 
+            border-left-color: var(--success-color);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 255, 136, 0.2);
+        }
+        .tool-card.unhealthy { 
+            border-left-color: var(--danger-color);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 68, 68, 0.2);
+        }
+
+        .tool-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 25px rgba(0, 212, 255, 0.3);
+        }
+
+        .progress-ring {
+            width: 120px;
+            height: 120px;
+        }
+
+        .progress-ring__circle {
+            stroke: var(--primary-color);
+            stroke-linecap: round;
+            transition: stroke-dasharray 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        .category-health {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            margin: 8px 0;
+            background: linear-gradient(145deg, #0f1419, #1a2332);
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 212, 255, 0.1);
+            border-left: 3px solid var(--primary-color);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            color: #e0e6ed;
+        }
+
+        .category-health strong {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .category-health .text-muted {
+            font-size: 0.8rem;
+            color: #a0b3c7;
+        }
+
+        .security-event {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 4px solid;
+            background: linear-gradient(145deg, #1a2332, #0f1419);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            color: #e0e6ed;
+        }
+
+        .security-event.high { 
+            border-left-color: var(--danger-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 68, 68, 0.2);
+        }
+        .security-event.medium { 
+            border-left-color: var(--warning-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 170, 0, 0.2);
+        }
+        .security-event.low { 
+            border-left-color: var(--success-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(0, 255, 136, 0.2);
+        }
+
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .7; }
+        }
+
+        .nav-tabs .nav-link {
+            border-radius: 10px 10px 0 0;
+            margin-right: 5px;
+            background: linear-gradient(145deg, #0f1419, #1a2332);
+            color: #a0b3c7;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .nav-tabs .nav-link:hover {
+            background: linear-gradient(145deg, #1a2332, #0f1419);
+            color: var(--primary-color);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(145deg, #1a2332, #0f1419);
+            color: var(--primary-color);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+            text-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+        }
+
+        .tab-content {
+            background: linear-gradient(145deg, #1a2332, #0f1419);
+            border-radius: 0 15px 15px 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .header-title {
+            color: var(--primary-color);
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.8), 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 30px;
+        }
+
+        .btn-action {
+            border-radius: 20px;
+            padding: 8px 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            background: linear-gradient(145deg, #0f1419, #1a2332);
+            color: var(--primary-color);
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 212, 255, 0.4);
+            border-color: var(--neon-blue);
+            color: white;
+        }
+
+        .btn-outline-primary {
+            background: linear-gradient(145deg, #0f1419, #1a2332);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary-color);
+            border-color: var(--neon-blue);
+            color: var(--dark-color);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+        }
+
+        .btn-success {
+            background: linear-gradient(145deg, #2d4a3e, #1e3028);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            color: #00ff88;
+            box-shadow: none;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(145deg, #1e3028, #2d4a3e);
+            border-color: rgba(0, 255, 136, 0.5);
+            color: #00ff88;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.2);
+        }
+
+        .btn-warning {
+            background: linear-gradient(145deg, #3d3420, #2a2315);
+            border: 1px solid rgba(255, 170, 0, 0.3);
+            color: #ffaa00;
+            box-shadow: none;
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(145deg, #2a2315, #3d3420);
+            border-color: rgba(255, 170, 0, 0.5);
+            color: #ffaa00;
+            box-shadow: 0 0 10px rgba(255, 170, 0, 0.2);
+        }
+
+        .btn-danger {
+            background: linear-gradient(145deg, #3d2020, #2a1515);
+            border: 1px solid rgba(255, 68, 68, 0.3);
+            color: #ff4444;
+            box-shadow: none;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(145deg, #2a1515, #3d2020);
+            border-color: rgba(255, 68, 68, 0.5);
+            color: #ff4444;
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.2);
+        }
+
+        /* Update text colors */
+        .text-muted {
+            color: #a0b3c7 !important;
+        }
+
+        h6, .h6 {
+            color: var(--primary-color);
+        }
+
+        /* Progress bars */
+        .progress {
+            background-color: rgba(15, 20, 25, 0.8);
+            border-radius: 4px;
+        }
+
+        .bg-success {
+            background: linear-gradient(90deg, #00ff88, #00cc66) !important;
+        }
+
+        .bg-warning {
+            background: linear-gradient(90deg, #ffaa00, #ff8800) !important;
+        }
+
+        .bg-danger {
+            background: linear-gradient(90deg, #ff4444, #cc3333) !important;
+        }
+
+        /* New styles for search and filter */
+        .search-filter-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .search-container {
+            position: relative;
+            flex-grow: 1;
+        }
+
+        .search-container .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0b3c7;
+            font-size: 1rem;
+        }
+
+        .search-input {
+            padding-left: 35px;
+            padding-right: 40px;
+            border-radius: 10px;
+            background: #1a2332;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            color: #e0e6ed;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            background: #2a3342;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+            color: var(--primary-color);
+        }
+
+        .btn-clear {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #a0b3c7;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .btn-clear:hover {
+            color: var(--primary-color);
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            background: #1a2332;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 10px;
+            color: #e0e6ed;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .filter-select:focus {
+            background: #2a3342;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+            color: var(--primary-color);
+        }
+
+        .quick-filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .quick-filter-label {
+            font-size: 0.9rem;
+            color: #a0b3c7;
+            margin-right: 10px;
+        }
+
+        .btn-quick-filter {
+            background: linear-gradient(145deg, #0f1419, #1a2332);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 10px;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #e0e6ed;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-quick-filter:hover {
+            background: linear-gradient(145deg, #1a2332, #0f1419);
+            border-color: var(--neon-blue);
+            color: var(--primary-color);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-quick-filter.active {
+            background: linear-gradient(145deg, #1a2332, #0f1419);
+            border-color: var(--neon-blue);
+            color: var(--primary-color);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .search-results-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding: 8px 15px;
+            background: #2a3342;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .results-text {
+            font-size: 0.9rem;
+            color: #a0b3c7;
+        }
+
+        .no-results {
+            margin-top: 20px;
+            padding: 20px;
+            background: #2a3342;
+            border-radius: 15px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .no-results .text-muted {
+            margin-bottom: 15px;
+        }
+
+        .no-results .btn-primary {
+            background: var(--primary-color);
+            border-color: var(--neon-blue);
+            color: var(--dark-color);
+            padding: 10px 20px;
+            font-weight: 600;
+        }
+
+        .no-results .btn-primary:hover {
+            background: var(--neon-blue);
+            border-color: var(--dark-blue);
+            color: white;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+            }
+            
+            .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .tool-card {
+            background: linear-gradient(145deg, #1a2332, #0f1419);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--neon-blue));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tool-card:hover::before {
+            opacity: 1;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--neon-blue);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.15);
+        }
+
+        /* Credentials Button Styles */
+        .btn-credentials {
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-credentials:hover {
+            background: linear-gradient(45deg, #f7931e, #ff6b35);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-credentials:before {
+            content: '🔐';
+            margin-right: 5px;
+        }
+
+        /* Credentials Modal */
+        .credentials-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            backdrop-filter: blur(5px);
+        }
+
+        .credentials-modal.active {
+            display: flex;
+        }
+
+        .credentials-content {
+            background: linear-gradient(145deg, #1a2332, #0f1419);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 450px;
+            width: 90%;
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.2);
+            position: relative;
+            animation: credentialsFadeIn 0.3s ease;
+        }
+
+        @keyframes credentialsFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .credentials-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            color: var(--neon-blue);
+        }
+
+        .credentials-header i {
+            font-size: 24px;
+            margin-right: 15px;
+        }
+
+        .credentials-header h4 {
+            margin: 0;
+            color: white;
+        }
+
+        .credentials-field {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .credentials-field label {
+            color: var(--neon-blue);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .credentials-field .value {
+            color: white;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .copy-btn {
+            background: var(--neon-blue);
+            color: var(--dark-color);
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .credentials-note {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            color: #ffc107;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .credentials-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--neon-blue);
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .credentials-close:hover {
+            color: white;
+            transform: scale(1.2);
+        }
+
+        .tool-card.healthy {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .tool-card.unhealthy {
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .tool-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .tool-info h6 {
+            margin: 0 0 8px 0;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .tool-info .tool-description {
+            font-size: 0.85rem;
+            color: #a0b3c7;
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+
+        .tool-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .tool-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tool-actions .btn {
+            flex: 1;
+            min-width: 70px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .tool-actions .btn-outline-primary {
+            background: linear-gradient(145deg, #0f1419, #1a2332);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            color: var(--primary-color);
+        }
+
+        .tool-actions .btn-outline-primary:hover {
+            background: var(--primary-color);
+            color: var(--dark-color);
+            border-color: var(--neon-blue);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="dashboard-container">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h1 class="header-title">
+                    <i class="fas fa-shield-alt me-3"></i>
+                    CyberBlue Portal - Enhanced Dashboard
+                </h1>
+                <p class="text-muted">Advanced Cybersecurity Operations Command Center</p>
+        </div>
+
+            <!-- Quick Metrics Row -->
+            <div class="row mb-4">
+                <div class="col-xl-3 col-lg-6 mb-4">
+                    <div class="metric-card">
+                        <div class="text-center">
+                            <i class="fas fa-server metric-icon text-primary"></i>
+                            <div class="metric-value" id="totalContainers">--</div>
+                            <div class="metric-label">Total Containers</div>
+            </div>
+            </div>
+                </div>
+                <div class="col-xl-3 col-lg-6 mb-4">
+                    <div class="metric-card">
+                        <div class="text-center">
+                            <i class="fas fa-heartbeat metric-icon text-success"></i>
+                            <div class="metric-value" id="healthPercentage">--</div>
+                            <div class="metric-label">System Health</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-lg-6 mb-4">
+                    <div class="metric-card">
+                        <div class="text-center">
+                            <i class="fas fa-microchip metric-icon text-warning"></i>
+                            <div class="metric-value" id="cpuUsage">--</div>
+                            <div class="metric-label">CPU Usage</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-lg-6 mb-4">
+                    <div class="metric-card">
+                        <div class="text-center">
+                            <i class="fas fa-memory metric-icon text-info"></i>
+                            <div class="metric-value" id="memoryUsage">--</div>
+                            <div class="metric-label">Memory Usage</div>
+                        </div>
+                    </div>
+            </div>
+        </div>
+
+            <!-- Dashboard Tabs -->
+            <ul class="nav nav-tabs mb-0" id="dashboardTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
+                        <i class="fas fa-tachometer-alt me-2"></i>Overview
+            </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tools-tab" data-bs-toggle="tab" data-bs-target="#tools" type="button" role="tab">
+                        <i class="fas fa-tools me-2"></i>Tools
+            </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="metrics-tab" data-bs-toggle="tab" data-bs-target="#metrics" type="button" role="tab">
+                        <i class="fas fa-chart-line me-2"></i>Metrics
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab">
+                        <i class="fas fa-shield-alt me-2"></i>Security Events
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="network-tab" data-bs-toggle="tab" data-bs-target="#network" type="button" role="tab">
+                        <i class="fas fa-network-wired me-2"></i>Network
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="dashboardTabContent">
+                <!-- Overview Tab -->
+                <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="chart-container">
+                                <h5><i class="fas fa-chart-area me-2"></i>System Trends (24h)</h5>
+                                <canvas id="trendsChart" height="80"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="chart-container">
+                                <h5><i class="fas fa-layer-group me-2"></i>Security Categories</h5>
+                                <div id="categoryHealth" style="max-height: 300px; overflow-y: auto;"></div>
+                            </div>
+                        </div>
+        </div>
+
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="chart-container">
+                                <h5><i class="fas fa-pie-chart me-2"></i>Container Distribution</h5>
+                                <canvas id="containerChart" height="120"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="chart-container">
+                                <h5><i class="fas fa-clock me-2"></i>Recent Activity</h5>
+                                <div id="recentActivity"></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="chart-container">
+                                <h5><i class="fas fa-microchip me-2"></i>System Resources</h5>
+                                <canvas id="systemChart" height="120"></canvas>
+                            </div>
+                        </div>
+                    </div>
+        </div>
+
+                <!-- Tools Tab -->
+                <div class="tab-pane fade" id="tools" role="tabpanel">
+                    <!-- Search and Filter Section -->
+                    <div class="search-filter-section mb-4">
+                        <div class="row">
+                            <div class="col-lg-6">
+            <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                                    <input type="text" id="toolSearch" class="form-control search-input" placeholder="Search tools by name, description, or category...">
+                                    <button class="btn btn-clear" id="clearSearch" style="display: none;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                </div>
+                            <div class="col-lg-6">
+                                <div class="filter-container">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <select id="categoryFilter" class="form-select filter-select">
+                                                <option value="">All Categories</option>
+                                                <option value="dfir">DFIR</option>
+                                                <option value="siem">SIEM</option>
+                                                <option value="soar">SOAR</option>
+                                                <option value="cti">CTI</option>
+                                                <option value="ids">IDS</option>
+                                                <option value="utility">Utility</option>
+                                                <option value="management">Management</option>
+                                                <option value="attack-simulation">Attack Simulation</option>
+                                            </select>
+            </div>
+                                        <div class="col-md-6">
+                                            <select id="statusFilter" class="form-select filter-select">
+                                                <option value="">All Status</option>
+                                                <option value="running">Running</option>
+                                                <option value="stopped">Stopped</option>
+                                                <option value="unknown">Unknown</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+            </div>
+        </div>
+
+                        <!-- Quick Filter Buttons -->
+                        <div class="quick-filters mt-3">
+                            <span class="quick-filter-label">Quick Filters:</span>
+                            <button class="btn btn-quick-filter" data-filter="running">
+                                <i class="fas fa-play-circle"></i> Running Only
+                            </button>
+                            <button class="btn btn-quick-filter" data-filter="stopped">
+                                <i class="fas fa-stop-circle"></i> Stopped Only
+                            </button>
+                            <button class="btn btn-quick-filter" data-filter="favorites">
+                                <i class="fas fa-star"></i> Favorites
+                            </button>
+                            <button class="btn btn-quick-filter active" data-filter="all">
+                                <i class="fas fa-list"></i> Show All
+                    </button>
+                </div>
+                
+                        <!-- Search Results Info -->
+                        <div class="search-results-info mt-2" id="searchResultsInfo" style="display: none;">
+                            <span class="results-text"></span>
+                            <button class="btn btn-link btn-sm" id="clearAllFilters">Clear all filters</button>
+                        </div>
+                </div>
+                
+                    <!-- Tools Grid -->
+                    <div id="toolsList" class="tools-grid">
+                        <!-- Tools will be dynamically loaded here -->
+                    </div>
+                    
+                    <!-- No Results Message -->
+                    <div id="noResultsMessage" class="no-results" style="display: none;">
+                        <div class="text-center">
+                            <i class="fas fa-search-minus mb-3"></i>
+                            <h5>No tools found</h5>
+                            <p class="text-muted">Try adjusting your search criteria or filters</p>
+                            <button class="btn btn-primary" id="resetSearch">Reset Search</button>
+                </div>
+            </div>
+        </div>
+
+                <!-- Metrics Tab -->
+                <div class="tab-pane fade" id="metrics" role="tabpanel">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="chart-container">
+                                <h5><i class="fas fa-microchip me-2"></i>System Resources</h5>
+                                <canvas id="metricsSystemChart" height="150"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="chart-container">
+                                <h5><i class="fas fa-hdd me-2"></i>Storage Usage</h5>
+                                <canvas id="storageChart" height="150"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="chart-container">
+                                <h5><i class="fas fa-history me-2"></i>Performance History</h5>
+                                <canvas id="performanceChart" height="100"></canvas>
+                            </div>
+                        </div>
+        </div>
+    </div>
+
+                <!-- Security Events Tab -->
+                <div class="tab-pane fade" id="security" role="tabpanel">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <h5><i class="fas fa-exclamation-triangle me-2"></i>Recent Security Events</h5>
+                            <div id="securityEvents"></div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="chart-container">
+                                <h5><i class="fas fa-chart-pie me-2"></i>Event Distribution</h5>
+                                <canvas id="securityChart" height="150"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Network Tab -->
+                <div class="tab-pane fade" id="network" role="tabpanel">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="chart-container">
+                                <h5><i class="fas fa-network-wired me-2"></i>Network Statistics</h5>
+                                <div id="networkStats"></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="chart-container">
+                                <h5><i class="fas fa-ethernet me-2"></i>Active Ports</h5>
+                                <div id="activePorts"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Enhanced Dashboard JavaScript
+        class EnhancedDashboard {
+            constructor() {
+                this.charts = {};
+                this.refreshInterval = 30000; // 30 seconds
+                this.serverInfo = null;
+                this.init();
+            }
+
+            init() {
+                this.loadServerInfo().then(() => {
+                    this.loadDashboard();
+                    this.setupAutoRefresh();
+                    this.setupCharts();
+                    this.setupSearchAndFilter(); // Initialize search and filter
+                });
+            }
+
+            async loadServerInfo() {
+                try {
+                    const response = await fetch('/api/server-info');
+                    this.serverInfo = await response.json();
+                    console.log('Server info loaded:', this.serverInfo);
+                } catch (error) {
+                    console.error('Error loading server info:', error);
+                    // Fallback to localhost if server info fails
+                    this.serverInfo = { server_ip: 'localhost' };
+                }
+            }
+
+            async loadDashboard() {
+                try {
+                    await Promise.all([
+                        this.loadMetrics(),
+                        this.loadTools(),
+                        this.loadTrends(),
+                        this.loadSecurityEvents(),
+                        this.loadNetworkStats()
+                    ]);
+                } catch (error) {
+                    console.error('Error loading dashboard:', error);
+                }
+            }
+
+            async loadMetrics() {
+                try {
+                    const response = await fetch('/api/dashboard/metrics');
+                    const data = await response.json();
+
+                    // Update quick metrics
+                    document.getElementById('totalContainers').textContent = data.containers.total;
+                    document.getElementById('healthPercentage').textContent = data.containers.health_percentage + '%';
+                    document.getElementById('cpuUsage').textContent = data.system.cpu_percent + '%';
+                    document.getElementById('memoryUsage').textContent = data.system.memory_percent + '%';
+
+                    // Update category health
+                    this.updateCategoryHealth(data.categories);
+
+                    // Update recent activity
+                    this.updateRecentActivity(data.activity);
+
+                    // Update charts
+                    this.updateContainerChart(data.containers);
+                    this.updateSystemChart(data.system);
+
+                } catch (error) {
+                    console.error('Error loading metrics:', error);
+                }
+            }
+
+            async loadTools() {
+                try {
+                    const response = await fetch('/api/tools');
+                    const data = await response.json();
+                    this.tools = data.tools;
+                    
+                    // Store tools globally for credentials function
+                    window.allTools = this.tools;
+                    
+                    console.log('Tools loaded:', this.tools);
+                } catch (error) {
+                    console.error('Error loading tools:', error);
+                    this.tools = [];
+                    window.allTools = [];
+                }
+            }
+
+            async loadTrends() {
+                try {
+                    const response = await fetch('/api/dashboard/trends');
+                const data = await response.json();
+
+                    this.updateTrendsChart(data.data);
+
+            } catch (error) {
+                    console.error('Error loading trends:', error);
+            }
+        }
+
+            async loadSecurityEvents() {
+            try {
+                    const response = await fetch('/api/dashboard/security-events');
+                const data = await response.json();
+
+                    this.updateSecurityEvents(data.events);
+                    this.updateSecurityChart(data.statistics);
+
+            } catch (error) {
+                    console.error('Error loading security events:', error);
+                }
+            }
+
+            async loadNetworkStats() {
+                try {
+                    const response = await fetch('/api/dashboard/network-stats');
+                    const data = await response.json();
+
+                    this.updateNetworkStats(data);
+
+                } catch (error) {
+                    console.error('Error loading network stats:', error);
+                }
+            }
+
+            updateCategoryHealth(categories) {
+                const container = document.getElementById('categoryHealth');
+                container.innerHTML = '';
+
+                Object.entries(categories).forEach(([category, health]) => {
+                    const statusClass = health.status === 'healthy' ? 'text-success' : 
+                                      health.status === 'degraded' ? 'text-warning' : 'text-danger';
+
+                    container.innerHTML += `
+                        <div class="category-health">
+                            <div>
+                                <strong>${category.toUpperCase()}</strong>
+                                <div class="text-muted small">${health.healthy_tools}/${health.total_tools} tools</div>
+            </div>
+                            <div class="text-end">
+                                <span class="h6 ${statusClass} mb-1">${health.health_percentage}%</span>
+                                <div class="progress mt-1" style="height: 4px; width: 60px;">
+                                    <div class="progress-bar ${health.status === 'healthy' ? 'bg-success' : health.status === 'degraded' ? 'bg-warning' : 'bg-danger'}" 
+                                         style="width: ${health.health_percentage}%"></div>
+            </div>
+            </div>
+        </div>
+                    `;
+                });
+            }
+
+            updateRecentActivity(activity) {
+                const container = document.getElementById('recentActivity');
+                container.innerHTML = `
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="metric-value text-success">${activity.container_starts}</div>
+                            <div class="metric-label">Starts</div>
+                    </div>
+                        <div class="col-6">
+                            <div class="metric-value text-danger">${activity.container_stops}</div>
+                            <div class="metric-label">Stops</div>
+                    </div>
+                </div>
+                    <div class="row text-center mt-3">
+                        <div class="col-6">
+                            <div class="metric-value text-info">${activity.api_calls}</div>
+                            <div class="metric-label">API Calls</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="metric-value text-warning">${activity.errors}</div>
+                            <div class="metric-label">Errors</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            updateToolsList(tools, statuses) {
+                const container = document.getElementById('toolsList');
+                container.innerHTML = '';
+
+                tools.forEach(tool => {
+                    const toolKey = this.getContainerStatusKey(tool.name);
+                    const status = statuses[toolKey] || { status: 'unknown', status_text: 'Unknown' };
+                    const healthClass = status.status === 'running' ? 'healthy' : 'unhealthy';
+                    const statusClass = status.status === 'running' ? 'status-running' : 
+                                      status.status === 'stopped' ? 'status-stopped' : 'status-unknown';
+
+                    const toolCard = document.createElement('div');
+                    toolCard.innerHTML = `
+                        <div class="tool-card ${healthClass}">
+                            <div class="tool-header">
+                                <div class="tool-info">
+                                    <h6>
+                                        <i class="${tool.icon} me-2"></i>
+                                        ${tool.name}
+                                    </h6>
+                <div class="tool-description">${tool.description}</div>
+                                    <div class="tool-status">
+                                        <span class="status-indicator ${statusClass}"></span>
+                                        <span class="small">${status.status_text}</span>
+                </div>
+                </div>
+                            </div>
+                            <div class="tool-actions">
+                                <a href="${tool.protocols[0]}://${this.serverInfo.server_ip}:${tool.port}" target="_blank" 
+                                   class="btn btn-outline-primary">
+                                    <i class="fas fa-external-link-alt me-1"></i>
+                                    Open
+                                </a>
+                                <button class="btn btn-credentials" onclick="showCredentials('${tool.name}')">
+                                    Credentials
+                                </button>
+                                <button class="btn btn-success" onclick="controlContainer('${toolKey}', 'start')">
+                                    <i class="fas fa-play me-1"></i>
+                                    Start
+                        </button>
+                                <button class="btn btn-warning" onclick="controlContainer('${toolKey}', 'restart')">
+                                    <i class="fas fa-redo me-1"></i>
+                                    Restart
+                        </button>
+                                <button class="btn btn-danger" onclick="controlContainer('${toolKey}', 'stop')">
+                                    <i class="fas fa-stop me-1"></i>
+                                    Stop
+                        </button>
+                </div>
+                </div>
+            `;
+            
+                    container.appendChild(toolCard);
+                });
+
+                // After loading tools, apply any active filters
+                setTimeout(() => this.filterTools(), 100);
+            }
+
+            updateSecurityEvents(events) {
+                const container = document.getElementById('securityEvents');
+                container.innerHTML = '';
+
+                events.slice(0, 10).forEach(event => {
+                    const timeAgo = this.timeAgo(new Date(event.timestamp));
+                    container.innerHTML += `
+                        <div class="security-event ${event.severity}">
+                            <div class="d-flex align-items-start">
+                                <i class="${event.icon} me-3 mt-1"></i>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">${event.title}</h6>
+                                    <p class="mb-1 text-muted">${event.description}</p>
+                                    <small class="text-muted">
+                                        ${timeAgo} by ${event.user}
+                                    </small>
+                </div>
+                                <span class="badge bg-${event.color}">${event.severity}</span>
+            </div>
+        </div>
+                    `;
+                });
+            }
+
+            updateNetworkStats(data) {
+                const statsContainer = document.getElementById('networkStats');
+                const portsContainer = document.getElementById('activePorts');
+
+                // Network stats
+            statsContainer.innerHTML = `
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="metric-value text-info">${this.formatBytes(data.system_network.bytes_sent)}</div>
+                                <div class="metric-label">Bytes Sent</div>
+                </div>
+                </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="metric-value text-success">${this.formatBytes(data.system_network.bytes_recv)}</div>
+                                <div class="metric-label">Bytes Received</div>
+                </div>
+                </div>
+                    </div>
+                    <hr>
+                    <h6>Docker Networks</h6>
+                    ${data.docker_networks.map(net => `
+                        <div class="d-flex justify-content-between py-2">
+                            <span>${net.name}</span>
+                            <span class="badge bg-secondary">${net.driver}</span>
+                        </div>
+                    `).join('')}
+                `;
+
+                // Active ports
+                portsContainer.innerHTML = data.active_ports.map(port => `
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <strong>${port.container}</strong>
+                        <span class="font-monospace">${port.ports}</span>
+                </div>
+            `).join('');
+        }
+
+            setupCharts() {
+                // Container Chart
+                const containerCtx = document.getElementById('containerChart').getContext('2d');
+                this.charts.container = new Chart(containerCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Running', 'Stopped'],
+                        datasets: [{
+                            data: [0, 0],
+                            backgroundColor: ['#00ff88', '#ff4444'],
+                            borderWidth: 2,
+                            borderColor: '#1a2332'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 10,
+                                    font: {
+                                        size: 12
+                                    },
+                                    color: '#e0e6ed'
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Trends Chart
+                const trendsCtx = document.getElementById('trendsChart').getContext('2d');
+                this.charts.trends = new Chart(trendsCtx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [
+                            {
+                                label: 'CPU Usage (%)',
+                                data: [],
+                                borderColor: '#ffaa00',
+                                backgroundColor: 'rgba(255, 170, 0, 0.1)',
+                                tension: 0.4,
+                                borderWidth: 2,
+                                pointRadius: 3,
+                                pointHoverRadius: 5,
+                                pointBackgroundColor: '#ffaa00',
+                                pointBorderColor: '#1a2332'
+                            },
+                            {
+                                label: 'Memory Usage (%)',
+                                data: [],
+                                borderColor: '#00d4ff',
+                                backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                                tension: 0.4,
+                                borderWidth: 2,
+                                pointRadius: 3,
+                                pointHoverRadius: 5,
+                                pointBackgroundColor: '#00d4ff',
+                                pointBorderColor: '#1a2332'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    padding: 15,
+                                    font: {
+                                        size: 12
+                                    },
+                                    color: '#e0e6ed'
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                grid: {
+                                    color: 'rgba(0, 212, 255, 0.1)'
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 11
+                                    },
+                                    color: '#a0b3c7'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(0, 212, 255, 0.05)'
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 11
+                                    },
+                                    maxTicksLimit: 8,
+                                    color: '#a0b3c7'
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // System Chart
+                const systemCtx = document.getElementById('systemChart').getContext('2d');
+                this.charts.system = new Chart(systemCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['CPU', 'Memory', 'Disk'],
+                        datasets: [{
+                            label: 'Usage (%)',
+                            data: [0, 0, 0],
+                            backgroundColor: ['#ffaa00', '#00d4ff', '#00ff88'],
+                            borderRadius: 8,
+                            borderSkipped: false,
+                            borderWidth: 2,
+                            borderColor: '#1a2332'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                grid: {
+                                    color: 'rgba(0, 212, 255, 0.1)'
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 11
+                                    },
+                                    color: '#a0b3c7'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 11
+                                    },
+                                    color: '#a0b3c7'
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Security Chart
+                const securityCtx = document.getElementById('securityChart').getContext('2d');
+                this.charts.security = new Chart(securityCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['High', 'Medium', 'Low'],
+                        datasets: [{
+                            data: [0, 0, 0],
+                            backgroundColor: ['#ff4444', '#ffaa00', '#00ff88'],
+                            borderWidth: 2,
+                            borderColor: '#1a2332'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 10,
+                                    font: {
+                                        size: 12
+                                    },
+                                    color: '#e0e6ed'
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Storage Chart (for Metrics tab)
+                const storageCtx = document.getElementById('storageChart').getContext('2d');
+                this.charts.storage = new Chart(storageCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Used', 'Free'],
+                        datasets: [{
+                            data: [0, 100],
+                            backgroundColor: ['#ffaa00', '#2d4a3e'],
+                            borderWidth: 2,
+                            borderColor: '#1a2332'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 10,
+                                    font: {
+                                        size: 12
+                                    },
+                                    color: '#e0e6ed'
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Performance Chart (for Metrics tab)
+                const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+                this.charts.performance = new Chart(performanceCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['1h ago', '45m', '30m', '15m', 'Now'],
+                        datasets: [
+                            {
+                                label: 'Response Time (ms)',
+                                data: [120, 89, 156, 203, 134],
+                                borderColor: '#00d4ff',
+                                backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                                tension: 0.4,
+                                borderWidth: 2,
+                                pointRadius: 3,
+                                pointBackgroundColor: '#00d4ff',
+                                pointBorderColor: '#1a2332'
+                            },
+                            {
+                                label: 'Load Average',
+                                data: [0.8, 1.2, 0.9, 1.5, 1.1],
+                                borderColor: '#00ff88',
+                                backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                                tension: 0.4,
+                                borderWidth: 2,
+                                pointRadius: 3,
+                                pointBackgroundColor: '#00ff88',
+                                pointBorderColor: '#1a2332'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    padding: 15,
+                                    font: {
+                                        size: 12
+                                    },
+                                    color: '#e0e6ed'
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0, 212, 255, 0.1)'
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 11
+                                    },
+                                    color: '#a0b3c7'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(0, 212, 255, 0.05)'
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 11
+                                    },
+                                    color: '#a0b3c7'
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Metrics System Chart (separate from Overview)
+                const metricsSystemCtx = document.getElementById('metricsSystemChart').getContext('2d');
+                this.charts.metricsSystem = new Chart(metricsSystemCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['CPU', 'Memory', 'Disk'],
+                        datasets: [{
+                            label: 'Usage (%)',
+                            data: [0, 0, 0],
+                            backgroundColor: ['#ffaa00', '#00d4ff', '#00ff88'],
+                            borderRadius: 8,
+                            borderSkipped: false,
+                            borderWidth: 2,
+                            borderColor: '#1a2332'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                grid: {
+                                    color: 'rgba(0, 212, 255, 0.1)'
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 11
+                                    },
+                                    color: '#a0b3c7'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 11
+                                    },
+                                    color: '#a0b3c7'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            updateContainerChart(containers) {
+                if (this.charts.container) {
+                    this.charts.container.data.datasets[0].data = [containers.running, containers.stopped];
+                    this.charts.container.update();
+                }
+            }
+
+            updateSystemChart(system) {
+                if (this.charts.system) {
+                    this.charts.system.data.datasets[0].data = [
+                        system.cpu_percent,
+                        system.memory_percent,
+                        system.disk_percent
+                    ];
+                    this.charts.system.update();
+                }
+                
+                // Also update metrics system chart if it exists
+                if (this.charts.metricsSystem) {
+                    this.charts.metricsSystem.data.datasets[0].data = [
+                        system.cpu_percent,
+                        system.memory_percent,
+                        system.disk_percent
+                    ];
+                    this.charts.metricsSystem.update();
+                }
+                
+                // Also update storage chart if it exists
+                if (this.charts.storage) {
+                    this.charts.storage.data.datasets[0].data = [
+                        system.disk_percent,
+                        100 - system.disk_percent
+                    ];
+                    this.charts.storage.update();
+                }
+            }
+
+            updateTrendsChart(data) {
+                if (this.charts.trends) {
+                    this.charts.trends.data.labels = data.labels;
+                    this.charts.trends.data.datasets[0].data = data.cpu_usage;
+                    this.charts.trends.data.datasets[1].data = data.memory_usage;
+                    this.charts.trends.update();
+                }
+            }
+
+            updateSecurityChart(stats) {
+                if (this.charts.security) {
+                    this.charts.security.data.datasets[0].data = [stats.high, stats.medium, stats.low];
+                    this.charts.security.update();
+                }
+            }
+
+            getContainerStatusKey(toolName) {
+                const toolStatusMap = {
+                    'velociraptor': 'velociraptor',
+                    'wazuh dashboard': 'wazuh-dashboard',
+                    'misp': 'misp',
+                    'cyberchef': 'cyberchef',
+                    'thehive': 'thehive',
+                    'cortex': 'cortex',
+                    'fleetdm': 'fleetdm',
+                    'arkime': 'arkime',
+                    'caldera': 'caldera',
+                    'evebox': 'evebox',
+                    'wireshark': 'wireshark',
+                    'mitre navigator': 'mitre-navigator',
+                    'portainer': 'portainer',
+                    'shuffle': 'shuffle'
+                };
+
+                return toolStatusMap[toolName.toLowerCase()] || toolName.toLowerCase();
+            }
+
+            setupAutoRefresh() {
+                setInterval(() => {
+                    this.loadDashboard();
+                }, this.refreshInterval);
+            }
+
+            timeAgo(date) {
+                const now = new Date();
+                const seconds = Math.floor((now - date) / 1000);
+                
+                if (seconds < 60) return 'just now';
+                if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+                if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+                return Math.floor(seconds / 86400) + 'd ago';
+            }
+
+            formatBytes(bytes) {
+                if (bytes === 0) return '0 B';
+                const k = 1024;
+                const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            setupSearchAndFilter() {
+                const searchInput = document.getElementById('toolSearch');
+                const categoryFilter = document.getElementById('categoryFilter');
+                const statusFilter = document.getElementById('statusFilter');
+                const clearSearch = document.getElementById('clearSearch');
+                const noResultsMessage = document.getElementById('noResultsMessage');
+                const searchResultsInfo = document.getElementById('searchResultsInfo');
+                const clearAllFiltersBtn = document.getElementById('clearAllFilters');
+                const resetSearchBtn = document.getElementById('resetSearch');
+
+                // Show/hide clear search button
+                searchInput.addEventListener('input', () => {
+                    if (searchInput.value) {
+                        clearSearch.style.display = 'block';
+                } else {
+                        clearSearch.style.display = 'none';
+                    }
+                    this.filterTools();
+                });
+
+                // Clear search
+                clearSearch.addEventListener('click', () => {
+                searchInput.value = '';
+                    clearSearch.style.display = 'none';
+                    this.filterTools();
+                });
+
+                // Filter event listeners
+                categoryFilter.addEventListener('change', () => this.filterTools());
+                statusFilter.addEventListener('change', () => this.filterTools());
+
+                // Quick filter buttons
+                document.querySelectorAll('.btn-quick-filter').forEach(button => {
+                    button.addEventListener('click', () => {
+                        document.querySelectorAll('.btn-quick-filter').forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+                        this.filterTools();
+                    });
+                });
+
+                // Clear all filters
+                clearAllFiltersBtn.addEventListener('click', () => {
+                    searchInput.value = '';
+                    categoryFilter.value = '';
+                    statusFilter.value = '';
+                    clearSearch.style.display = 'none';
+                    document.querySelectorAll('.btn-quick-filter').forEach(btn => btn.classList.remove('active'));
+                    document.querySelector('.btn-quick-filter[data-filter="all"]').classList.add('active');
+                    this.filterTools();
+                });
+
+                // Reset search
+                resetSearchBtn.addEventListener('click', () => {
+                    searchInput.value = '';
+                    categoryFilter.value = '';
+                    statusFilter.value = '';
+                    clearSearch.style.display = 'none';
+                    document.querySelectorAll('.btn-quick-filter').forEach(btn => btn.classList.remove('active'));
+                    document.querySelector('.btn-quick-filter[data-filter="all"]').classList.add('active');
+                    this.filterTools();
+                });
+            }
+
+            filterTools() {
+                const searchInput = document.getElementById('toolSearch');
+                const categoryFilter = document.getElementById('categoryFilter');
+                const statusFilter = document.getElementById('statusFilter');
+                const noResultsMessage = document.getElementById('noResultsMessage');
+                const searchResultsInfo = document.getElementById('searchResultsInfo');
+                const activeQuickFilter = document.querySelector('.btn-quick-filter.active')?.dataset.filter || 'all';
+
+                const searchTerm = searchInput.value.toLowerCase();
+                const selectedCategory = categoryFilter.value.toLowerCase();
+                const selectedStatus = statusFilter.value;
+
+                // Get all tool cards (direct children of toolsList now)
+                const toolCards = document.querySelectorAll('#toolsList > div');
+                let visibleCount = 0;
+
+                toolCards.forEach(cardWrapper => {
+                    const toolCard = cardWrapper.querySelector('.tool-card');
+                    const toolName = toolCard.querySelector('h6').textContent.trim().toLowerCase();
+                    const toolDescription = toolCard.querySelector('.tool-description').textContent.toLowerCase();
+                    
+                    // Get tool data from the card
+                    const statusIndicator = toolCard.querySelector('.status-indicator');
+                    let currentStatus = 'unknown';
+                    if (statusIndicator.classList.contains('status-running')) {
+                        currentStatus = 'running';
+                    } else if (statusIndicator.classList.contains('status-stopped')) {
+                        currentStatus = 'stopped';
+                    }
+
+                    // Determine category from tool name/description (basic categorization)
+                    let toolCategory = '';
+                    if (toolName.includes('wazuh')) toolCategory = 'siem';
+                    else if (toolName.includes('velociraptor')) toolCategory = 'dfir';
+                    else if (toolName.includes('shuffle') || toolName.includes('thehive') || toolName.includes('cortex')) toolCategory = 'soar';
+                    else if (toolName.includes('misp') || toolName.includes('mitre')) toolCategory = 'cti';
+                    else if (toolName.includes('arkime') || toolName.includes('evebox')) toolCategory = 'ids';
+                    else if (toolName.includes('cyberchef') || toolName.includes('wireshark')) toolCategory = 'utility';
+                    else if (toolName.includes('portainer') || toolName.includes('fleetdm')) toolCategory = 'management';
+                    else if (toolName.includes('caldera')) toolCategory = 'attack-simulation';
+
+                    // Apply filters
+                    let shouldShow = true;
+
+                    // Search filter
+                    if (searchTerm && !toolName.includes(searchTerm) && !toolDescription.includes(searchTerm) && !toolCategory.includes(searchTerm)) {
+                        shouldShow = false;
+                    }
+
+                    // Category filter
+                    if (selectedCategory && toolCategory !== selectedCategory) {
+                        shouldShow = false;
+                    }
+
+                    // Status filter
+                    if (selectedStatus && currentStatus !== selectedStatus) {
+                        shouldShow = false;
+                    }
+
+                    // Quick filter
+                    if (activeQuickFilter === 'running' && currentStatus !== 'running') {
+                        shouldShow = false;
+                    } else if (activeQuickFilter === 'stopped' && currentStatus !== 'stopped') {
+                        shouldShow = false;
+                    } else if (activeQuickFilter === 'favorites') {
+                        // Placeholder for favorites - for now, show popular tools
+                        const popularTools = ['wazuh', 'misp', 'arkime', 'wireshark', 'portainer'];
+                        if (!popularTools.some(popular => toolName.includes(popular))) {
+                            shouldShow = false;
+                        }
+                    }
+
+                    // Show/hide card
+                    if (shouldShow) {
+                        cardWrapper.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        cardWrapper.style.display = 'none';
+                    }
+                });
+
+                // Update results info
+                if (visibleCount === 0) {
+                    noResultsMessage.style.display = 'block';
+                    searchResultsInfo.style.display = 'none';
+                } else {
+                    noResultsMessage.style.display = 'none';
+                    
+                    // Show results info if any filters are active
+                    const hasActiveFilters = searchTerm || selectedCategory || selectedStatus || activeQuickFilter !== 'all';
+                    if (hasActiveFilters) {
+                        searchResultsInfo.style.display = 'block';
+                        searchResultsInfo.querySelector('.results-text').textContent = 
+                            `${visibleCount} tool${visibleCount === 1 ? '' : 's'} found`;
+                    } else {
+                        searchResultsInfo.style.display = 'none';
+                    }
+                }
+            }
+        }
+
+        // Container control functions
+        async function controlContainer(containerName, action) {
+            try {
+                const response = await fetch(`/api/containers/${containerName}/${action}`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show success message
+                    showNotification(`Container ${action} successful`, 'success');
+                    // Refresh tools status
+                    setTimeout(() => dashboard.loadTools(), 1000);
+                } else {
+                    showNotification(`Container ${action} failed: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        function showNotification(message, type) {
+            // Simple notification system
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const notification = document.createElement('div');
+            notification.className = `alert ${alertClass} position-fixed top-0 end-0 m-3`;
+            notification.style.zIndex = '9999';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 5000);
+        }
+
+        // Credentials Modal Functions
+        const credentialsModal = document.createElement('div');
+        credentialsModal.className = 'credentials-modal';
+        credentialsModal.innerHTML = `
+            <div class="credentials-content">
+                <div class="credentials-header">
+                    <i class="fas fa-key"></i>
+                    <h4>Tool Credentials</h4>
+                    <button class="credentials-close" onclick="closeCredentialsModal()">&times;</button>
+                </div>
+                <div class="credentials-field">
+                    <label for="toolName">Tool Name:</label>
+                    <div class="value" id="toolName"></div>
+                </div>
+                <div class="credentials-field">
+                    <label for="toolUrl">Tool URL:</label>
+                    <div class="value" id="toolUrl"></div>
+                </div>
+                <div class="credentials-field">
+                    <label for="toolUsername">Username:</label>
+                    <div class="value" id="toolUsername"></div>
+                </div>
+                <div class="credentials-field">
+                    <label for="toolPassword">Password:</label>
+                    <div class="value" id="toolPassword"></div>
+                </div>
+                <div class="credentials-note">
+                    <i class="fas fa-info-circle"></i>
+                    These credentials are sensitive. Do not share them.
+                </div>
+                <button class="btn btn-outline-primary" onclick="copyToClipboard('toolName', 'toolUrl', 'toolUsername', 'toolPassword')">
+                    Copy All
+                </button>
+                <button class="btn btn-outline-primary" onclick="closeCredentialsModal()">Close</button>
+            </div>
+        `;
+        document.body.appendChild(credentialsModal);
+
+        function showCredentialsModal(containerName) {
+            const tool = dashboard.getToolByContainerName(containerName);
+            if (tool) {
+                document.getElementById('toolName').textContent = tool.name;
+                document.getElementById('toolUrl').textContent = `${tool.protocols[0]}://${dashboard.serverInfo.server_ip}:${tool.port}`;
+                document.getElementById('toolUsername').textContent = 'N/A'; // No username for now
+                document.getElementById('toolPassword').textContent = 'N/A'; // No password for now
+                credentialsModal.classList.add('active');
+            } else {
+                showNotification('Tool not found.', 'error');
+            }
+        }
+
+        function closeCredentialsModal() {
+            credentialsModal.classList.remove('active');
+        }
+
+        function copyToClipboard(nameId, urlId, usernameId, passwordId) {
+            const name = document.getElementById(nameId).textContent;
+            const url = document.getElementById(urlId).textContent;
+            const username = document.getElementById(usernameId).textContent;
+            const password = document.getElementById(passwordId).textContent;
+
+            const textToCopy = `Tool: ${name}\nURL: ${url}\nUsername: ${username}\nPassword: ${password}`;
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showNotification('Credentials copied to clipboard!', 'success');
+            }).catch(err => {
+                showNotification('Failed to copy credentials.', 'error');
+                console.error('Failed to copy credentials:', err);
+            });
+        }
+
+        // Initialize dashboard
+        const dashboard = new EnhancedDashboard();
+
+        // Global functions for container control
+        function controlContainer(toolKey, action) {
+            dashboard.controlContainer(toolKey, action);
+        }
+
+        // Credentials Modal Functions
+        let allTools = []; // Store tools data globally
+
+        // Create credentials modal
+        const credentialsModal = document.createElement('div');
+        credentialsModal.className = 'credentials-modal';
+        credentialsModal.innerHTML = `
+            <div class="credentials-content">
+                <button class="credentials-close" onclick="closeCredentialsModal()">&times;</button>
+                <div class="credentials-header">
+                    <i class="fas fa-key"></i>
+                    <h4 id="credentialsToolName">Tool Credentials</h4>
+                </div>
+                <div id="credentialsBody">
+                    <!-- Dynamic content will be inserted here -->
+                </div>
+                <div class="credentials-note">
+                    <i class="fas fa-info-circle"></i>
+                    These are default credentials. Change them in production!
+                </div>
+            </div>
+        `;
+        document.body.appendChild(credentialsModal);
+
+        function showCredentials(toolName) {
+            const tool = allTools.find(t => t.name === toolName);
+            if (!tool || !tool.credentials) {
+                showNotification('No credentials available for this tool', 'warning');
+                return;
+            }
+
+            document.getElementById('credentialsToolName').textContent = `${tool.name} Credentials`;
+            const credentialsBody = document.getElementById('credentialsBody');
+            
+            if (tool.credentials.note) {
+                // Tool doesn't require authentication
+                credentialsBody.innerHTML = `
+                    <div class="credentials-note">
+                        <i class="fas fa-info-circle"></i>
+                        ${tool.credentials.note}
+                    </div>
+                `;
+            } else {
+                // Tool has username/password
+                credentialsBody.innerHTML = `
+                    <div class="credentials-field">
+                        <label>URL:</label>
+                        <div class="value">
+                            <span>${tool.protocols[0]}://${dashboard.serverInfo.server_ip}:${tool.port}</span>
+                            <button class="copy-btn" onclick="copyToClipboard('${tool.protocols[0]}://${dashboard.serverInfo.server_ip}:${tool.port}')">Copy</button>
+                        </div>
+                    </div>
+                    <div class="credentials-field">
+                        <label>Username:</label>
+                        <div class="value">
+                            <span>${tool.credentials.username}</span>
+                            <button class="copy-btn" onclick="copyToClipboard('${tool.credentials.username}')">Copy</button>
+                        </div>
+                    </div>
+                    <div class="credentials-field">
+                        <label>Password:</label>
+                        <div class="value">
+                            <span>${tool.credentials.password}</span>
+                            <button class="copy-btn" onclick="copyToClipboard('${tool.credentials.password}')">Copy</button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            credentialsModal.classList.add('active');
+        }
+
+        function closeCredentialsModal() {
+            credentialsModal.classList.remove('active');
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('Copied to clipboard!', 'success');
+            }).catch(err => {
+                showNotification('Failed to copy to clipboard', 'error');
+                console.error('Copy failed:', err);
+            });
+        }
+
+        // Close modal when clicking outside
+        credentialsModal.addEventListener('click', function(e) {
+            if (e.target === credentialsModal) {
+                closeCredentialsModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && credentialsModal.classList.contains('active')) {
+                closeCredentialsModal();
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberBlueBox Portal - Blue Team SOC-in-a-Box</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f1419 0%, #1a2332 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #e8eaed;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #ffffff;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            background: linear-gradient(135deg, #4a90e2, #7bb3f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            color: #b8c5d6;
+        }
+
+        .status-bar {
+            background: rgba(26, 35, 50, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            color: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            border: 1px solid rgba(74, 144, 226, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; box-shadow: 0 0 10px rgba(76, 175, 80, 0.5); }
+            50% { opacity: 0.5; box-shadow: 0 0 20px rgba(76, 175, 80, 0.8); }
+            100% { opacity: 1; box-shadow: 0 0 10px rgba(76, 175, 80, 0.5); }
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: rgba(26, 35, 50, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 5px;
+            margin-bottom: 30px;
+            gap: 5px;
+            border: 1px solid rgba(74, 144, 226, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            color: #b8c5d6;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #4a90e2, #7bb3f0);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4);
+        }
+
+        .nav-tab:hover:not(.active) {
+            background: rgba(74, 144, 226, 0.1);
+            color: #ffffff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .tool-card {
+            background: rgba(26, 35, 50, 0.9);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(74, 144, 226, 0.2);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4a90e2, #7bb3f0);
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border-color: #4a90e2;
+            background: rgba(26, 35, 50, 0.95);
+        }
+
+        .tool-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .tool-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .tool-icon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #4a90e2, #7bb3f0);
+            opacity: 0.9;
+            z-index: 1;
+        }
+
+        .tool-icon i {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Tool-specific icon colors */
+        .tool-card[data-tool="velociraptor"] .tool-icon::before {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        }
+
+        .tool-card[data-tool="wazuh"] .tool-icon::before {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+        }
+
+        .tool-card[data-tool="misp"] .tool-icon::before {
+            background: linear-gradient(135deg, #45b7d1, #96c93d);
+        }
+
+        .tool-card[data-tool="cyberchef"] .tool-icon::before {
+            background: linear-gradient(135deg, #ff9ff3, #f368e0);
+        }
+
+        .tool-card[data-tool="thehive"] .tool-icon::before {
+            background: linear-gradient(135deg, #ff9f43, #f39c12);
+        }
+
+        .tool-card[data-tool="cortex"] .tool-icon::before {
+            background: linear-gradient(135deg, #54a0ff, #2e86de);
+        }
+
+        .tool-card[data-tool="fleetdm"] .tool-icon::before {
+            background: linear-gradient(135deg, #5f27cd, #341f97);
+        }
+
+        .tool-card[data-tool="arkime"] .tool-icon::before {
+            background: linear-gradient(135deg, #00d2d3, #54a0ff);
+        }
+
+        .tool-card[data-tool="caldera"] .tool-icon::before {
+            background: linear-gradient(135deg, #ff6348, #ff3838);
+        }
+
+        .tool-card[data-tool="evebox"] .tool-icon::before {
+            background: linear-gradient(135deg, #26de81, #20bf6b);
+        }
+
+        .tool-card[data-tool="wireshark"] .tool-icon::before {
+            background: linear-gradient(135deg, #fd79a8, #e84393);
+        }
+
+        .tool-card[data-tool="mitre"] .tool-icon::before {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+        }
+
+        .tool-card[data-tool="portainer"] .tool-icon::before {
+            background: linear-gradient(135deg, #00b894, #00a085);
+        }
+
+        .tool-info h3 {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+            color: #ffffff;
+        }
+
+        .tool-info .port {
+            font-size: 0.9rem;
+            color: #b8c5d6;
+            font-weight: 500;
+        }
+
+        .tool-description {
+            color: #b8c5d6;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .tool-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4a90e2, #7bb3f0);
+            color: white;
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 144, 226, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(74, 144, 226, 0.1);
+            color: #4a90e2;
+            border: 1px solid rgba(74, 144, 226, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(74, 144, 226, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.2);
+        }
+
+        .category-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: rgba(74, 144, 226, 0.2);
+            color: #4a90e2;
+            border: 1px solid rgba(74, 144, 226, 0.3);
+        }
+
+        .category-dfir { background: rgba(255, 107, 107, 0.2); color: #ff6b6b; border-color: rgba(255, 107, 107, 0.3); }
+        .category-siem { background: rgba(78, 205, 196, 0.2); color: #4ecdc4; border-color: rgba(78, 205, 196, 0.3); }
+        .category-cti { background: rgba(69, 183, 209, 0.2); color: #45b7d1; border-color: rgba(69, 183, 209, 0.3); }
+        .category-soar { background: rgba(150, 206, 180, 0.2); color: #96ceb4; border-color: rgba(150, 206, 180, 0.3); }
+        .category-ids { background: rgba(254, 202, 87, 0.2); color: #feca57; border-color: rgba(254, 202, 87, 0.3); }
+        .category-utility { background: rgba(255, 159, 243, 0.2); color: #ff9ff3; border-color: rgba(255, 159, 243, 0.3); }
+        .category-management { background: rgba(84, 160, 255, 0.2); color: #54a0ff; border-color: rgba(84, 160, 255, 0.3); }
+
+        .changelog-container {
+            background: rgba(26, 35, 50, 0.9);
+            border-radius: 20px;
+            padding: 25px;
+            max-height: 600px;
+            overflow-y: auto;
+            border: 1px solid rgba(74, 144, 226, 0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .changelog-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(74, 144, 226, 0.2);
+            color: #ffffff;
+        }
+
+        .changelog-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #4a90e2, #7bb3f0);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .changelog-entry {
+            background: rgba(15, 20, 25, 0.6);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #4a90e2;
+            color: #b8c5d6;
+        }
+
+        .changelog-entry.warning {
+            border-left-color: #ffc107;
+            background: rgba(255, 193, 7, 0.1);
+        }
+
+        .changelog-entry.error {
+            border-left-color: #dc3545;
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+        .changelog-entry.success {
+            border-left-color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .entry-action {
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .entry-timestamp {
+            font-size: 0.8rem;
+            color: #8b9bb4;
+        }
+
+        .entry-details {
+            color: #b8c5d6;
+            line-height: 1.4;
+        }
+
+        .entry-meta {
+            display: flex;
+            gap: 15px;
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: #8b9bb4;
+        }
+
+        .entry-user {
+            font-weight: 500;
+        }
+
+        .entry-level {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .level-info { background: rgba(74, 144, 226, 0.2); color: #4a90e2; }
+        .level-warning { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+        .level-error { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+        .level-success { background: rgba(40, 167, 69, 0.2); color: #28a745; }
+
+        .footer {
+            text-align: center;
+            color: #b8c5d6;
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(26, 35, 50, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(74, 144, 226, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .footer a {
+            color: #4a90e2;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer a:hover {
+            color: #7bb3f0;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .status-bar {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .changelog-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: white;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .refresh-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            background: rgba(26, 35, 50, 0.8);
+            border-radius: 15px;
+            border: 1px solid rgba(74, 144, 226, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: #2a394d;
+            border-radius: 10px;
+            padding: 8px 12px;
+            flex: 1;
+            margin-right: 15px;
+        }
+
+        .search-box .search-icon {
+            color: #b8c5d6;
+            margin-right: 10px;
+        }
+
+        .search-input {
+            background: none;
+            border: none;
+            color: #e8eaed;
+            font-size: 1rem;
+            flex: 1;
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: #8b9bb4;
+        }
+
+        .clear-search-btn {
+            background: none;
+            border: none;
+            color: #b8c5d6;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .clear-search-btn:hover {
+            color: #dc3545;
+        }
+
+        .search-stats {
+            font-size: 0.9rem;
+            color: #8b9bb4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-shield-alt"></i> CyberBlueBox Portal</h1>
+            <p>Blue Team SOC-in-a-Box - Your Complete Security Operations Center</p>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-indicator"></div>
+                <span>System Status: Operational</span>
+            </div>
+            <div class="status-item">
+                <i class="fas fa-clock"></i>
+                <span id="current-time"></span>
+            </div>
+            <div class="status-item">
+                <i class="fas fa-server"></i>
+                <span id="container-count">Loading...</span>
+            </div>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('tools')">
+                <i class="fas fa-tools"></i> Tools
+            </button>
+            <button class="nav-tab" onclick="showTab('changelog')">
+                <i class="fas fa-history"></i> Changelog
+            </button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+        </div>
+
+        <div class="tab-content active" id="tools-tab">
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="tool-search" placeholder="Search tools by name, category, or description..." class="search-input">
+                    <button id="clear-search" class="clear-search-btn" style="display: none;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="search-stats">
+                    <span id="search-results-count">13 tools available</span>
+                </div>
+            </div>
+            <div class="tools-grid" id="tools-grid">
+                <!-- Tools will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="tab-content" id="changelog-tab">
+            <div class="changelog-container">
+                <div class="changelog-header">
+                    <h2><i class="fas fa-history"></i> System Changelog</h2>
+                    <button class="refresh-btn" onclick="loadChangelog()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                
+                <div class="changelog-stats" id="changelog-stats">
+                    <!-- Stats will be populated by JavaScript -->
+                </div>
+                
+                <div id="changelog-entries">
+                    <!-- Changelog entries will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Built with ❤️ for the cybersecurity community</p>
+            <p>Powered by <a href="https://github.com/m7siri/cyber-blue-test" target="_blank">CyberBlueBox</a></p>
+        </div>
+    </div>
+
+    <script>
+        let tools = [];
+        let changelogEntries = [];
+        let filteredTools = [];
+
+        // Get server hostname dynamically
+        function getServerHostname() {
+            return window.location.hostname;
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTools();
+            loadChangelog();
+            updateContainerCount();
+            initializeSearch();
+            
+            // Update data every 30 seconds
+            setInterval(() => {
+                updateContainerCount();
+                loadChangelog();
+            }, 30000);
+        });
+
+        function showTab(tabName) {
+            // Hide all tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-tab').style.display = 'block';
+            
+            // Add active class to selected tab
+            event.target.classList.add('active');
+        }
+
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString();
+        }
+
+        async function updateContainerCount() {
+            try {
+                const response = await fetch('/api/containers');
+                const data = await response.json();
+                document.getElementById('container-count').textContent = `${data.count} containers running`;
+            } catch (error) {
+                document.getElementById('container-count').textContent = 'System monitoring active';
+            }
+        }
+
+        async function loadTools() {
+            try {
+                const response = await fetch('/api/tools');
+                const data = await response.json();
+                tools = data.tools;
+                filteredTools = [...tools]; // Initialize filtered tools
+                renderTools();
+                updateSearchStats();
+            } catch (error) {
+                console.error('Error loading tools:', error);
+                // Fallback to hardcoded tools if API fails
+                tools = getDefaultTools();
+                filteredTools = [...tools]; // Initialize filtered tools
+                renderTools();
+                updateSearchStats();
+            }
+        }
+
+        function getDefaultTools() {
+            return [
+                {
+                    name: "Velociraptor",
+                    description: "Digital Forensics and Incident Response platform for live endpoint forensics and threat hunting.",
+                    port: 7000,
+                    icon: "fas fa-search",
+                    category: "dfir",
+                    categoryName: "DFIR",
+                    protocols: ["https"]
+                },
+                {
+                    name: "Wazuh Dashboard",
+                    description: "SIEM dashboard for log analysis, alerting, and security monitoring with Kibana-style interface.",
+                    port: 7001,
+                    icon: "fas fa-chart-line",
+                    category: "siem",
+                    categoryName: "SIEM",
+                    protocols: ["https"]
+                },
+                {
+                    name: "MISP",
+                    description: "Threat Intelligence Platform for sharing, storing, and correlating indicators of compromise.",
+                    port: 7003,
+                    icon: "fas fa-brain",
+                    category: "cti",
+                    categoryName: "CTI",
+                    protocols: ["https"]
+                },
+                {
+                    name: "CyberChef",
+                    description: "Cyber Swiss Army Knife for data analysis, encoding, decoding, and forensics operations.",
+                    port: 7004,
+                    icon: "fas fa-utensils",
+                    category: "utility",
+                    categoryName: "Utility",
+                    protocols: ["http"]
+                },
+                {
+                    name: "TheHive",
+                    description: "Incident Response and Case Management platform for security operations teams.",
+                    port: 7005,
+                    icon: "fas fa-bug",
+                    category: "soar",
+                    categoryName: "SOAR",
+                    protocols: ["http"]
+                },
+                {
+                    name: "Cortex",
+                    description: "Automated threat analysis platform with analyzers for TheHive integration.",
+                    port: 7006,
+                    icon: "fas fa-robot",
+                    category: "soar",
+                    categoryName: "SOAR",
+                    protocols: ["http"]
+                },
+                {
+                    name: "FleetDM",
+                    description: "Osquery-based endpoint visibility and fleet management platform.",
+                    port: 7007,
+                    icon: "fas fa-desktop",
+                    category: "management",
+                    categoryName: "Management",
+                    protocols: ["http"]
+                },
+                {
+                    name: "Arkime",
+                    description: "Full packet capture and session search engine for network analysis.",
+                    port: 7008,
+                    icon: "fas fa-network-wired",
+                    category: "ids",
+                    categoryName: "IDS",
+                    protocols: ["http"]
+                },
+                {
+                    name: "Evebox",
+                    description: "Web-based viewer for Suricata EVE JSON logs and alert management.",
+                    port: 7010,
+                    icon: "fas fa-eye",
+                    category: "ids",
+                    categoryName: "IDS",
+                    protocols: ["https"]
+                },
+                {
+                    name: "Caldera",
+                    description: "Automated adversary emulation platform for security testing and red team operations.",
+                    port: 7009,
+                    icon: "fas fa-chess-king",
+                    category: "soar",
+                    categoryName: "SOAR",
+                    protocols: ["http"]
+                },
+                {
+                    name: "Wireshark",
+                    description: "Network protocol analyzer for deep packet inspection and network troubleshooting.",
+                    port: 7011,
+                    icon: "fas fa-filter",
+                    category: "utility",
+                    categoryName: "Utility",
+                    protocols: ["http", "https"]
+                },
+                {
+                    name: "MITRE Navigator",
+                    description: "Interactive ATT&CK matrix for threat modeling and attack path visualization.",
+                    port: 7013,
+                    icon: "fas fa-sitemap",
+                    category: "cti",
+                    categoryName: "CTI",
+                    protocols: ["http"]
+                },
+                {
+                    name: "Portainer",
+                    description: "Web-based container management interface for Docker and Kubernetes.",
+                    port: 9443,
+                    icon: "fas fa-ship",
+                    category: "management",
+                    categoryName: "Management",
+                    protocols: ["https"]
+                }
+            ];
+        }
+
+        function createToolCard(tool) {
+            const card = document.createElement('div');
+            card.className = 'tool-card';
+            card.setAttribute('data-tool', tool.name.toLowerCase().replace(/\s/g, '')); // Add data attribute for specific icon color
+            
+            const protocols = tool.protocols.map(p => p.toUpperCase()).join('/');
+            const serverHost = getServerHostname();
+            
+            card.innerHTML = `
+                <div class="category-badge category-${tool.category}">${tool.categoryName}</div>
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="${tool.icon}"></i>
+                    </div>
+                    <div class="tool-info">
+                        <h3>${tool.name}</h3>
+                        <div class="port">Port ${tool.port} (${protocols})</div>
+                    </div>
+                </div>
+                <div class="tool-description">${tool.description}</div>
+                <div class="tool-actions">
+                    <a href="${tool.protocols[0]}://${serverHost}:${tool.port}" target="_blank" class="btn btn-primary">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                    ${tool.protocols.length > 1 ? `
+                        <a href="${tool.protocols[1]}://${serverHost}:${tool.port}" target="_blank" class="btn btn-secondary">
+                            <i class="fas fa-lock"></i>
+                            Secure
+                        </a>
+                    ` : ''}
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function renderTools() {
+            const toolsGrid = document.getElementById('tools-grid');
+            toolsGrid.innerHTML = '';
+            
+            filteredTools.forEach(tool => {
+                const card = createToolCard(tool);
+                toolsGrid.appendChild(card);
+            });
+        }
+
+        async function loadChangelog() {
+            try {
+                // Load changelog entries
+                const response = await fetch('/api/changelog?limit=50');
+                const data = await response.json();
+                changelogEntries = data.entries;
+                
+                // Load changelog stats
+                const statsResponse = await fetch('/api/changelog/stats');
+                const statsData = await statsResponse.json();
+                
+                renderChangelog(changelogEntries, statsData);
+            } catch (error) {
+                console.error('Error loading changelog:', error);
+                document.getElementById('changelog-entries').innerHTML = 
+                    '<p style="text-align: center; color: #666;">Error loading changelog. Please try again later.</p>';
+            }
+        }
+
+        function renderChangelog(entries, stats) {
+            // Render stats
+            const statsContainer = document.getElementById('changelog-stats');
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${stats.total_entries}</div>
+                    <div class="stat-label">Total Entries</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.recent_activity}</div>
+                    <div class="stat-label">Last 24h</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${Object.keys(stats.by_level).length}</div>
+                    <div class="stat-label">Levels</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${Object.keys(stats.by_action).length}</div>
+                    <div class="stat-label">Actions</div>
+                </div>
+            `;
+            
+            // Render entries
+            const entriesContainer = document.getElementById('changelog-entries');
+            if (entries.length === 0) {
+                entriesContainer.innerHTML = '<p style="text-align: center; color: #666;">No changelog entries found.</p>';
+                return;
+            }
+            
+            entriesContainer.innerHTML = entries.map(entry => `
+                <div class="changelog-entry ${entry.level}">
+                    <div class="entry-header">
+                        <div class="entry-action">${entry.action}</div>
+                        <div class="entry-timestamp">${formatTimestamp(entry.timestamp)}</div>
+                    </div>
+                    <div class="entry-details">${entry.details}</div>
+                    <div class="entry-meta">
+                        <span class="entry-user">👤 ${entry.user}</span>
+                        <span class="entry-level level-${entry.level}">${entry.level}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function formatTimestamp(timestamp) {
+            try {
+                const date = new Date(timestamp);
+                return date.toLocaleString();
+            } catch (error) {
+                return timestamp;
+            }
+        }
+
+        function initializeSearch() {
+            const searchInput = document.getElementById('tool-search');
+            const clearSearchBtn = document.getElementById('clear-search');
+            
+            // Search functionality
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                filterTools(searchTerm);
+            });
+            
+            // Clear search functionality
+            clearSearchBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                filterTools('');
+                this.style.display = 'none';
+            });
+            
+            // Show/hide clear button based on input
+            searchInput.addEventListener('input', function() {
+                clearSearchBtn.style.display = this.value ? 'block' : 'none';
+            });
+        }
+
+        function filterTools(searchTerm) {
+            if (!searchTerm) {
+                filteredTools = [...tools];
+            } else {
+                filteredTools = tools.filter(tool => {
+                    const searchableText = [
+                        tool.name.toLowerCase(),
+                        tool.description.toLowerCase(),
+                        tool.categoryName.toLowerCase(),
+                        tool.category.toLowerCase(),
+                        tool.port.toString(),
+                        tool.protocols.join(' ').toLowerCase()
+                    ].join(' ');
+                    
+                    return searchableText.includes(searchTerm);
+                });
+            }
+            
+            renderTools();
+            updateSearchStats();
+        }
+
+        function updateSearchStats() {
+            const statsElement = document.getElementById('search-results-count');
+            const totalTools = tools.length;
+            const filteredCount = filteredTools.length;
+            
+            if (filteredCount === totalTools) {
+                statsElement.textContent = `${totalTools} tools available`;
+            } else {
+                statsElement.textContent = `${filteredCount} of ${totalTools} tools found`;
+            }
+        }
+
+        // Add some interactive features
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn')) {
+                // Add a small delay to show the click effect
+                setTimeout(() => {
+                    e.target.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        e.target.style.transform = '';
+                    }, 150);
+                }, 50);
+            }
+        });
+    </script>
+</body>
+</html> 

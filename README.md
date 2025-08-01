@@ -66,8 +66,8 @@ CyberBlue transforms complex cybersecurity tool deployment into a **one-command 
 
 ```bash
 # Clone the repository
-git clone https://github.com/m7siri/cyber-blue-project.git
-cd cyber-blue-project
+git clone https://github.com/m7siri/cyberblue.git
+cd cyberblue
 
 # Run the quick start script
 chmod +x cyberblue_init.sh
